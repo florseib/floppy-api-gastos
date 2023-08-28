@@ -1,5 +1,6 @@
 import { Request, Response, Router } from "express";
 import Gasto, { IGasto } from "../models/gasto";
+import Categoria from "../models/categoria";
 
 const router = Router();
 
@@ -24,9 +25,25 @@ router.get("/:id", async(req: Request, res: Response) => {
 })
 
 router.post("/", async(req: Request, res: Response) => {
-    const gastoData: IGasto = req.body;
+    const {valor, descripcion, categoria} = req.body;
 
-    const gasto = new Gasto(gastoData);
+    let categoriaObject = await Categoria.findOne({descripcion: categoria.toUpperCase()});
+
+    console.log(categoriaObject)
+
+    if(!categoriaObject) {
+        categoriaObject = new Categoria({
+            descripcion: categoria.toUpperCase()
+        })
+
+        categoriaObject.save();
+    }
+
+    const gasto = new Gasto({
+        valor: valor,
+        descripcion: descripcion,
+        categoriaId: categoriaObject?._id,
+    });
 
     await gasto.save();
 

@@ -9,6 +9,7 @@ const CategoriaSchema = new Schema<ICategoria>({
     descripcion: {
         type: String,
         required: true,
+        unique: true,
     },
 });
 

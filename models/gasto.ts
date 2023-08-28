@@ -1,10 +1,10 @@
-import { Model, Schema, model } from "mongoose";
+import { Model, ObjectId, Schema, model } from "mongoose";
 import Categoria from "./categoria"
 
 export interface IGasto {
     valor: number;
     descripcion: string;
-    // categoria: Categoria;
+    categoriaId: ObjectId;
     // fechaCarga: 
 }
 
@@ -16,6 +16,11 @@ const GastoSchema = new Schema<IGasto>({
     valor: {
         type: Number,
         required: true,
+    },
+    categoriaId: {
+        type: Schema.Types.ObjectId,
+        ref: "Categoria",
+        required: true
     },
 });
 
