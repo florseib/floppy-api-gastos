@@ -4,7 +4,7 @@ import Categoria from "./categoria"
 export interface IGasto {
     valor: number;
     descripcion: string;
-    categoriaId: ObjectId;
+    categoria: ObjectId;
     // fechaCarga: 
 }
 
@@ -17,7 +17,7 @@ const GastoSchema = new Schema<IGasto>({
         type: Number,
         required: true,
     },
-    categoriaId: {
+    categoria: {
         type: Schema.Types.ObjectId,
         ref: "Categoria",
         required: true

@@ -4,52 +4,87 @@ import Categoria from "../models/categoria";
 
 const router = Router();
 
-router.get("/", async(req: Request, res: Response) => {
-    const gastos = await Gasto.find();
+router.get("/", async (req: Request, res: Response) => {
+    const gastos = await Gasto.find().populate("categoria", "descripcion");
 
     res.json({
-        msg: "Todo ok",
         gastos
     })
 })
 
-router.get("/:id", async(req: Request, res: Response) => {
-    const {id} = req.params;
+router.get("/:id", async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const mongoose = require('mongoose');
 
-    const gasto = await Gasto.findById(id);
+    if (mongoose.Types.ObjectId.isValid(id)) {
+        const gasto = await Gasto.findById(id).populate("categoria", "descripcion");
 
-    res.json({
-        msg: "Get by Id",
-        gasto
-    })
+        if (gasto)
+            res.json({
+                gasto
+            })
+        else
+            res.json({
+                msg: "Gasto no encontrado"
+            })
+    }
+    else {
+        res.json({
+            msg: "ID inválido"
+        })
+    }
 })
 
-router.post("/", async(req: Request, res: Response) => {
-    const {valor, descripcion, categoria} = req.body;
+router.get("/GetByCategory/:categoria", async (req: Request, res: Response) => {
+    const { categoria } = req.params;
 
-    let categoriaObject = await Categoria.findOne({descripcion: categoria.toUpperCase()});
+    const categoriaObject = await Categoria.findOne({ descripcion: categoria.toUpperCase() });
 
-    console.log(categoriaObject)
+    if (categoriaObject) {
+        const gastos = await Gasto.find({ categoria: categoriaObject?._id }).populate("categoria", "descripcion")
 
-    if(!categoriaObject) {
-        categoriaObject = new Categoria({
-            descripcion: categoria.toUpperCase()
+        res.json({
+            gastos
         })
-
-        categoriaObject.save();
     }
+    else {
+        res.json({
+            msg: "No se encontraron gastos"
+        })
+    }
+})
 
-    const gasto = new Gasto({
-        valor: valor,
-        descripcion: descripcion,
-        categoriaId: categoriaObject?._id,
-    });
+router.post("/", async (req: Request, res: Response) => {
+    try {
+        const { valor, descripcion, categoria } = req.body;
 
-    await gasto.save();
+        let categoriaObject = await Categoria.findOne({ descripcion: categoria.toUpperCase() });
 
-    res.json({
-        gasto
-    })
+        console.log(categoriaObject)
+
+        if (!categoriaObject) {
+            categoriaObject = new Categoria({
+                descripcion: categoria.toUpperCase()
+            })
+
+            categoriaObject.save();
+        }
+
+        const gasto = new Gasto({
+            valor: valor,
+            descripcion: descripcion,
+            categoria: categoriaObject?._id,
+        });
+
+        await gasto.save();
+
+        res.json({
+            ...gasto, descripcion: categoriaObject.descripcion
+        })
+    }
+    catch (error) {
+        console.log(error)
+    }
 })
 
 export default router;
