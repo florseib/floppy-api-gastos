@@ -58,32 +58,47 @@ router.post("/", async (req: Request, res: Response) => {
     try {
         const { valor, descripcion, categoria } = req.body;
 
-        let categoriaObject = await Categoria.findOne({ descripcion: categoria.toUpperCase() });
-
-        console.log(categoriaObject)
-
-        if (!categoriaObject) {
-            categoriaObject = new Categoria({
-                descripcion: categoria.toUpperCase()
+        if(valor && typeof valor == "number" && descripcion && typeof descripcion == "string" && categoria && typeof categoria == "string") {
+            let categoriaObject = await Categoria.findOne({ descripcion: categoria.toUpperCase() });
+    
+            console.log(categoriaObject)
+    
+            if (!categoriaObject) {
+                categoriaObject = new Categoria({
+                    descripcion: categoria.toUpperCase()
+                })
+    
+                categoriaObject.save();
+            }
+    
+            const gasto = new Gasto({
+                valor: valor,
+                descripcion: descripcion,
+                categoria: categoriaObject?._id,
+            });
+    
+            await gasto.save();
+    
+            res.json({
+                gasto: {
+                    _id: gasto._id,
+                    valor: gasto.valor,
+                    descripcion: gasto.descripcion,
+                    categoriaId: categoriaObject._id,
+                    categoria: categoriaObject.descripcion
+                }
             })
-
-            categoriaObject.save();
         }
-
-        const gasto = new Gasto({
-            valor: valor,
-            descripcion: descripcion,
-            categoria: categoriaObject?._id,
-        });
-
-        await gasto.save();
-
-        res.json({
-            ...gasto, descripcion: categoriaObject.descripcion
-        })
+        else {
+            res.json({
+                msg: "Los datos ingresados son inválidos"
+            })
+        }
     }
     catch (error) {
-        console.log(error)
+        res.json({
+            msg: "Error cargando gasto"
+        })
     }
 })
 
