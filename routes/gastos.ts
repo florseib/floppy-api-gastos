@@ -61,8 +61,6 @@ router.post("/", async (req: Request, res: Response) => {
         if(valor && typeof valor == "number" && descripcion && typeof descripcion == "string" && categoria && typeof categoria == "string") {
             let categoriaObject = await Categoria.findOne({ descripcion: categoria.toUpperCase() });
     
-            console.log(categoriaObject)
-    
             if (!categoriaObject) {
                 categoriaObject = new Categoria({
                     descripcion: categoria.toUpperCase()
